@@ -84,8 +84,9 @@ page {
 #swiperRecentList  .weui-panel::before {
     border-top: none;
 }
-#swiperRecentList .weui-panel__ft{
-	color: #999;
+
+#swiperRecentList .weui-panel__ft {
+    color: #999;
 }
 
 .subscribeItemRight {
@@ -142,4 +143,35 @@ page {
 
 #swiperItemSubscribeList .weui-panel {
     height: 100%;
+}
+
+.viewItem {
+    position: relative;
+	    border-bottom: 1rpx solid #e5e5e5;
+}
+
+.navigatorItem {
+    z-index: 998;
+    background-color: #fff;
+}
+
+.buttonDelete {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 0px;
+    margin:0;
+    background-color: #e64340;
+    color: #fff;
+    display: flex;
+    width: 100px;
+    align-items: center;
+    justify-content: center;
+    z-index: 997;
+}
+
+.buttonDelete::after {
+    border-radius: 0px;
+    border: none;
 }

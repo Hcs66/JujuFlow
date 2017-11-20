@@ -2,13 +2,12 @@
 //获取应用实例
 const g_app = getApp();
 const g_pageSize = 7;
+const g_buttonDeleteWidth = 100;
 var g_pageIndex = 1;
 var g_isRefresh = false;
+var g_startX = 0;
 Page({
 	data: {
-		userInfo: {},
-		hasUserInfo: false,
-		canIUse: wx.canIUse('button.open-type.getUserInfo'),
 		subscribeCountInfo: {
 			//thisMonthPaid: 300,
 			thisMonthTotal: 0,
@@ -28,6 +27,7 @@ Page({
 		//初始化数据
 		if (optinons && optinons.refresh) g_isRefresh = true;
 		this.loadCountData();
+		//this.loadSubscribeList(1);
 	},
 	onShow: function () {
 		//重新加载时刷新数据
@@ -66,24 +66,21 @@ Page({
 				item = list[i];
 				startDate = new Date(item.start_date);
 				//按月付费计算累加费用
-				isRecentDay = (item.charge_day >= thisDay && item.charge_day < maxDay) || item.charge_day <= (maxDay - 30)
+				isRecentDay = (item.charge_day >= thisDay && item.charge_day < maxDay) || item.charge_day <= (maxDay - 30);
 				if (item.payment_period == 0) {
 					thisMonthTotal += item.charge;
 					item.period_text = '月';
-					if (isRecentDay) {
-						item.left_days = maxDay - item.charge_day;
-						recentList.push(item);
-					}
 				}
 				else if (item.payment_period == 1) {//按年付费累加费用
 					thisYearTotal += item.charge;
 					item.period_text = '年';
-					if (startDate.getFullYear() <= thisYear && (startDate.getMonth() + 1) == thisMonth && isRecentDay) {
-						item.left_days = maxDay - item.charge_day;
-						recentList.push(item);
-					}
+					isRecentDay = startDate.getFullYear() <= thisYear && (startDate.getMonth() + 1) == thisMonth && isRecentDay;
 				}
-			}
+				if (isRecentDay) {
+					item.left_days = item.charge_day >= thisDay ? (item.charge_day - thisDay) : (item.charge_day + 30 - thisDay);
+					recentList.push(item);
+				}
+			};
 			//更新视图
 			that.setData({
 				subscribeCountInfo: {
@@ -172,9 +169,6 @@ Page({
 			this.loadSubscribeList(g_pageIndex);
 		}
 	},
-	scrollToUpper: function (e) {
-
-	},
 	scrollToLower: function (e) {
 		//加载更多数据
 		if (this.data.subscribeList.length < this.data.totalCount) {
@@ -183,6 +177,106 @@ Page({
 			});
 			this.loadSubscribeList(++g_pageIndex);
 		}
+	},
+	touchStart: function (e) {
+		//判断是否只有一个触摸点
+		if (e.touches.length == 1) {
+			//记录触摸起始位置的X坐标
+			g_startX = e.touches[0].clientX;
+		}
+	},
+	touchMove: function (e) {
+		if (e.touches.length == 1) {
+			var that = this;
+			//记录触摸点位置的X坐标
+			var moveX = e.touches[0].clientX;
+			//计算手指起始点的X坐标与当前触摸点的X坐标的差值
+			var disX = g_startX - moveX;
+			var itemStyle = "";
+			if (disX == 0 || disX < 0) {//如果移动距离小于等于0，文本层位置不变
+				itemStyle = "left:0px";
+			} else if (disX > 0) {//移动距离大于0，文本层left值等于手指移动距离
+				itemStyle = "left:-" + disX + "px";
+				if (disX >= g_buttonDeleteWidth) {
+					//控制手指移动距离最大值为删除按钮的宽度
+					itemStyle = "left:-" + g_buttonDeleteWidth + "px";
+				}
+			}
+			//获取手指触摸的是哪一个item
+			var index = e.currentTarget.dataset.index;
+			var list = that.data.subscribeList;
+			//将拼接好的样式设置到当前item中
+			list[index].itemStyle = itemStyle;
+			//更新列表的状态
+			that.setData({
+				subscribeList: list
+			});
+		}
+	},
+	touchEnd: function (e) {
+		var that = this;
+		if (e.changedTouches.length == 1) {
+			//手指移动结束后触摸点位置的X坐标
+			var endX = e.changedTouches[0].clientX;
+			//触摸开始与结束，手指移动的距离
+			var disX = g_startX - endX;
+			//如果距离小于删除按钮的1/2，不显示删除按钮
+			var itemStyle = disX > g_buttonDeleteWidth / 2 ? "left:-" + g_buttonDeleteWidth + "px" : "left:0px";
+			//获取手指触摸的是哪一项
+			var index = e.currentTarget.dataset.index;
+			var list = that.data.subscribeList;
+			list[index].itemStyle = itemStyle;
+			//更新列表的状态
+			that.setData({
+				subscribeList: list
+			});
+		}
+	},
+	deleteItem: function (e) {
+		var that = this;
+		var index = e.currentTarget.dataset.index;
+		var list = that.data.subscribeList;
+		var item = list[index];
+		wx.showModal({
+			title: '提示',
+			content: '确定删除吗？',
+			success: function (res) {
+				if (res.confirm) {
+					//删除记录
+					item.isBusy = true;
+					that.setData({
+						subscribeList: list
+					});
+					var recordID = item.id;
+					var SubscribeItemList = new wx.BaaS.TableObject(g_app.globalData.subscribeItemListTableID);
+					SubscribeItemList.delete(recordID).then((res) => {
+						// 删除成功，提示并更新视图
+						list.splice(index, 1);
+						that.setData({
+							subscribeList: list
+						});
+						wx.showToast({
+							title: '删除成功',
+							icon: 'success',
+							duration: 3000
+						});
+					}, (err) => {
+						wx.showToast({
+							title: '删除失败,请重试',
+							icon: 'success',
+							duration: 3000
+						});
+					})
+
+				} else if (res.cancel) {
+					item.isBusy = false;
+					item.itemStyle = "left:0px";
+					that.setData({
+						subscribeList: list
+					});
+				}
+			}
+		})
 	},
 	drawProgress: function () {
 
@@ -197,7 +291,7 @@ Page({
 		//todo:计算已缴纳费用，画进度
 		/*var thisMonthPaid = this.data.subscribeCountInfo.thisMonthPaid;
 		var thisMonthTotal = this.data.subscribeCountInfo.thisMonthTotal;
-
+	
 		var ctx = wx.createCanvasContext('canvasProgressBackground');
 		ctx.setLineWidth(6);
 		ctx.setStrokeStyle('#b2b2b2');
@@ -205,14 +299,14 @@ Page({
 		ctx.beginPath();//开始一个新的路径 
 		ctx.arc(106, 106, 100, 0, 2 * Math.PI, false);//设置一个原点(106,106)，半径为100的圆的路径到当前路径 
 		ctx.stroke();//对当前路径进行描边 
-
+	
 		//3秒动画描绘进度
 		if (thisMonthTotal == 0) {
 			ctx.draw();
 			return;
 		}
 		var ratio = Math.PI * 1.5 * (thisMonthPaid / thisMonthTotal);
-
+	
 		ctx.setLineWidth(6);
 		ctx.setStrokeStyle('#3ea6ff');
 		ctx.setLineCap('round');
