@@ -261,6 +261,10 @@ Page({
 							duration: 3000
 						});
 					}, (err) => {
+						item.isBusy = false;
+						that.setData({
+							subscribeList: list
+						});
 						wx.showToast({
 							title: '删除失败,请重试',
 							icon: 'success',
