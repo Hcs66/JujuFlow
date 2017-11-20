@@ -1,0 +1,17 @@
+/**app.wxss**/
+
+.page {
+    height: 100%;
+}
+
+.page__bd {
+    height: 100%;
+}
+
+.display-flex {
+    display: flex;
+    justify-content: center;
+}
+
+
+@import "libs/WeUI/weui.wxss"

@@ -1,0 +1,29 @@
+/* pages/addItem/addItem.wxss */
+
+.radio-button {
+    display: inline-block;
+}
+
+.radio-button button {
+    border-radius: 0;
+}
+
+.radio-button button:after {
+    border-radius: 0;
+}
+
+.checked button {
+    border: 1px solid green;
+}
+
+#buttonAdd {
+    margin: 10px;
+}
+
+.weui-cells {
+    padding-bottom: 5px;
+}
+
+#subscribeDescription {
+    margin-top: 10px;
+}

@@ -1,0 +1,133 @@
+<!--index.wxml-->
+<button id="addSubscribeItem" bindtap='addSubscribeItem'>
+    <image src='http://ozfusju3i.bkt.clouddn.com/jujuflow/image/icon/plus-a.png'></image>
+</button>
+<swiper id="mainSwiper" vertical='true' bindchange='changeMainSwiper'>
+    <swiper-item>
+        <view class='page'>
+            <view class="page__bd">
+                <!--<view class="weui- flex" id='viewCurrentCount'>
+                    <view class='weui-flex__item text-align-center'>
+                        <canvas canvas-id="canvasProgressBackground"></canvas>
+                    </view>
+                    <view id='currentCount' class='weui-flex__item text-align-center'>
+                        <text class='display-flex subscribeCountNumber'>￥{{subscribeCountInfo.thisMonthTotal}}</text>
+                        <text class='textCountTitle'>月度费用</text>
+                    </view>
+                </view>-->
+                <view class="weui-flex" id='viewSubscribeCount'>
+                    <view id='thisMonthCount' class='weui-flex__item'>
+                        <view class='subscribeCountContainer'>
+                            <text class='subscribeCountNumber'>￥{{subscribeCountInfo.thisMonthTotal}}</text>
+                            <text class='textCountTitle'>月付费</text>
+                        </view>
+
+                    </view>
+                    <view id='thisYearCount' class='weui-flex__item text-align-center'>
+                        <view class='subscribeCountContainer'>
+                            <text class='subscribeCountNumber'>￥{{subscribeCountInfo.thisYearTotal}}</text>
+                            <text class='textCountTitle'>年付费</text>
+                        </view>
+                    </view>
+                    <view id='subscribeNumberCount' class='weui-flex__item text-align-center'>
+                        <view class='subscribeCountContainer'>
+                            <text class='subscribeCountNumber'>{{subscribeCountInfo.subscribeTotal}}个</text>
+                            <text class='textCountTitle'>订阅数</text>
+                        </view>
+                    </view>
+                </view>
+                <view class="weui-flex" id='viewRecentList'>
+                    <swiper id="swiperRecentList" class='weui-flex__item' indicator-dots='true' circular='true'>
+                        <view class="weui-panel__hd">
+                            <view class='vertical-middle'>
+                                <image src='	http://ozfusju3i.bkt.clouddn.com/jujuflow/image/icon/todate.png' class='icon'></image>
+                                <text class='textTitleAfterIcon'>7天内到期订阅</text>
+                            </view>
+                        </view>
+                        <block wx:for="{{recentSubscribeList}}" wx:key="id">
+                            <swiper-item>
+                                <view class="weui-panel weui-panel_access">
+                                    <view class="weui-panel__bd">
+                                        <view class="weui-media-box weui-media-box_appmsg" hover-class="weui-cell_active">
+                                            <view class="weui-media-box__hd weui-media-box__hd_in-appmsg">
+                                                <image class="weui-media-box__thumb" src="	http://ozfusju3i.bkt.clouddn.com/jujuflow/image/company/{{item.company_code}}.png" />
+                                            </view>
+                                            <view class="weui-media-box__bd weui-media-box__bd_in-appmsg subscribeItemTtitle">
+                                                <view class="weui-media-box__title">{{item.company_name}}</view>
+                                                <view class="weui-media-box__desc">{{item.description}}</view>
+                                            </view>
+                                            <view class="weui-media-box__bd weui-media-box__bd_in-appmsg  subscribeItemRight">
+                                                <view class="weui-media-box__title subscribeItemPrice">￥{{item.charge}}/{{item.period_text}}</view>
+                                                <view class="weui-media-box__desc subscribeItemLeft">剩余{{item.left_days}}天/{{item.charge_day}}号结账</view>
+                                            </view>
+                                        </view>
+                                    </view>
+                                </view>
+                            </swiper-item>
+                        </block>
+                        <block wx:if="{{isRecentListEmpty}}">
+                            <view class="weui-panel__ft">
+                                <view class="weui-cell weui-cell_access">
+                                    <view class="weui-cell__bd">没有即将到期的订阅</view>
+                                </view>
+                            </view>
+                        </block>
+                    </swiper>
+                </view>
+                <view class='viewArrowDown'>
+                    <view class='weui-flex__item'>
+                        <image id='imageArrow' src='{{srcImageArrow}}'></image>
+                    </view>
+                </view>
+            </view>
+        </view>
+    </swiper-item>
+    <swiper-item id="swiperItemSubscribeList">
+        <view class='page'>
+            <view class="page__bd">
+                <view class="weui-panel weui-panel_access">
+                    <view class="weui-panel__hd">
+                        <view class='vertical-middle'>
+                            <image src='http://ozfusju3i.bkt.clouddn.com/jujuflow/image/icon/list.png' class='icon'></image>
+                            <text class='textTitleAfterIcon'>所有订阅项目</text>
+                        </view>
+                    </view>
+                    <block wx:if="{{isEmpty}}">
+                        <view class="weui-loadmore weui-loadmore_line">
+                            <view class="weui-loadmore__tips weui-loadmore__tips_in-line">没有东西呀，先添加吧</view>
+                        </view>
+                    </block>
+                    <scroll-view id='scrollViewAllList' scroll-y='true' class="weui-panel__bd" enable-back-to-top="true" bindscrolltoupper="scrollToUpper" bindscrolltolower="scrollToLower">
+                        <block wx:for="{{subscribeList}}" wx:key="id">
+                            <navigator url="" class="weui-media-box weui-media-box_appmsg" hover-class="weui-cell_active">
+                                <view class="weui-media-box__hd weui-media-box__hd_in-appmsg">
+                                    <image class="weui-media-box__thumb" src="http://ozfusju3i.bkt.clouddn.com/jujuflow/image/company/{{item.company_code}}.png" />
+                                </view>
+                                <view class="weui-media-box__bd weui-media-box__bd_in-appmsg subscribeItemTtitle">
+                                    <view class="weui-media-box__title">{{item.company_name}}</view>
+                                    <view class="weui-media-box__desc">{{item.description}}</view>
+                                </view>
+
+                                <view class="weui-media-box__bd weui-media-box__bd_in-appmsg  subscribeItemRight">
+                                    <view class="weui-media-box__title subscribeItemPrice">￥{{item.charge}}/{{item.period_text}}</view>
+                                    <view class="weui-media-box__desc subscribeItemLeft">{{item.charge_day}}号结账</view>
+                                </view>
+                            </navigator>
+                        </block>
+                        <block wx:if="{{subscribeList.length>0&&subscribeList.length==totalCount}}">
+                            <view class="weui-loadmore weui-loadmore_line">
+                                <view class="weui-loadmore__tips weui-loadmore__tips_in-line">到底啦</view>
+                            </view>
+                        </block>
+                        <block wx:if="{{isLoading}}">
+                            <view class="weui-loadmore">
+                                <view class="weui-loading"></view>
+                                <view class="weui-loadmore__tips">正在加载</view>
+                            </view>
+                        </block>
+                    </scroll-view>
+                </view>
+            </view>
+        </view>
+    </swiper-item>
+</swiper>

@@ -1,0 +1,145 @@
+/**index.wxss**/
+
+page {
+    height: 100%;
+    overflow-y: hidden;
+}
+
+#mainSwiper {
+    height: 100%;
+    width: 100%;
+}
+
+#mainSwiper .page__bd {
+    display: flex;
+    flex-direction: column;
+}
+
+#viewSubscribeCount view.weui-flex__item {
+    align-items: center;
+    justify-content: center;
+}
+
+#thisMonthCount, #thisYearCount, #subscribeNumberCount {
+    display: flex;
+}
+
+.subscribeCountContainer {
+    text-align: center;
+}
+
+.subscribeCountNumber {
+    display: block;
+}
+
+#viewSubscribeCount {
+    flex: 1;
+    padding: 0 15px;
+}
+
+.textTitleAfterIcon {
+    margin-left: 5px;
+}
+
+#addSubscribeItem {
+    width: 50px;
+    height: 50px;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 0;
+    z-index: 999;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0px 3px 8px #aaa, inset 0px 2px 3px #fff;
+    content: none;
+    background-color: #ff9212;
+}
+
+#addSubscribeItem::after {
+    content: none;
+}
+
+#addSubscribeItem image {
+    width: 24px;
+    height: 24px;
+    vertical-align: middle;
+}
+
+.bg {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgb(240, 240, 240);
+    filter: blur(100px);
+}
+
+#swiperRecentList {
+    width: 100%;
+    height: 250px;
+}
+
+#swiperRecentList  .weui-panel::before {
+    border-top: none;
+}
+#swiperRecentList .weui-panel__ft{
+	color: #999;
+}
+
+.subscribeItemRight {
+    text-align: right;
+}
+
+.viewArrowDown {
+    width: 100%;
+    text-align: center;
+}
+
+#imageArrow {
+    width: 30px;
+    height: 30px;
+}
+
+#viewCurrentCount {
+    margin: 30px 0;
+    height: 212px;
+    align-items: center;
+}
+
+#viewCurrentCount canvas {
+    display: flex;
+    width: 212px;
+    height: 212px;
+    margin: 0 auto;
+}
+
+#currentCount {
+    margin-top: -130px;
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+}
+
+.vertical-middle, .vertical-middle image, .vertical-middle text {
+    vertical-align: middle;
+}
+
+.textCountTitle {
+    color: #999;
+}
+
+.subscribeCountNumber {
+    font-size: 24px;
+}
+
+#scrollViewAllList {
+    height: 540px;
+}
+
+#swiperItemSubscribeList .weui-panel {
+    height: 100%;
+}
