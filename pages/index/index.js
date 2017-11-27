@@ -1,60 +1,67 @@
 //index.js
 //获取应用实例
 const g_app = getApp();
-const g_pageSize = 7;
 const g_buttonDeleteWidth = 100;
+const g_subscribeItemHeight = 90;
+const g_listHeaderHeight = 47;
 var g_pageIndex = 1;
-var g_isRefresh = false;
+var g_pageSize = 10;
 var g_startX = 0;
+var g_needRefreshCount = false;
 Page({
 	data: {
 		subscribeCountInfo: {
-			//thisMonthPaid: 300,
 			thisMonthTotal: 0,
 			thisYearTotal: 0,
 			subscribeTotal: 0
 		},
 		subscribeList: [],
 		recentSubscribeList: [],
-		srcImageArrow: g_app.globalData.qiniuyunPath + 'image/icon/arrow-up.png',
+		imageArrowSrc: 'arrow-up.png',
 		totalCount: 0,
-		isLoading: false,
-		isEmpty: false,
-		isRecentListEmpty: false
+		isLoadingList: false,
+		qiniuyunPath: g_app.globalData.qiniuyunPath,
+		clientHeight: 0,
+		isBusy: false
 	},
-	//事件处理函数
+	//页面加载事件
 	onLoad: function (optinons) {
+		var that = this;
 		//初始化数据
-		if (optinons && optinons.refresh) g_isRefresh = true;
-		this.loadCountData();
-		//this.loadSubscribeList(1);
+		g_pageIndex = 1;
+		this.setData({
+			subscribeList: []
+		});
+		wx.getSystemInfo({
+			success: function (res) {
+				//根据实际高度调整显示数量
+				that.setData({
+					clientHeight: res.windowHeight - g_listHeaderHeight
+				});
+				g_pageSize = Math.ceil(that.data.clientHeight / g_subscribeItemHeight);
+				//加载数据
+				that.loadCountData();
+			}
+		});
 	},
-	onShow: function () {
-		//重新加载时刷新数据
-		if (g_isRefresh) {
-			this.loadCountData();
-			this.data.subscribeList = [];
-			g_pageIndex = 1;
-		}
-	},
+	//加载统计数据和最近到期订阅
 	loadCountData: function () {
 		var that = this;
 		wx.showLoading({
 			title: "辛勤加载中"
 		});
 		var SubscribeItemList = new wx.BaaS.TableObject(g_app.globalData.subscribeItemListTableID);
-		//获取所有数据.todo:不能查单值和返回所有数据
+		//获取当前用户数据,todo:不能查单值
 		var uid = wx.BaaS.storage.get('uid');
 		var query = new wx.BaaS.Query();
 		query.compare('user_id', '=', uid);
 		//todo:防止登录信息失效
-		SubscribeItemList.setQuery(query).limit(1000).offset(0).find().then((res) => {
+		SubscribeItemList.setQuery(query).limit(0).offset(0).find().then((res) => {
 			var list = res.data.objects;
 			var recentList = [];
 			var listCount = res.data.meta;
 			var thisMonthTotal = 0;
 			var thisYearTotal = 0;
-			var item;
 			var thisDate = new Date();
 			var thisYear = thisDate.getFullYear();
 			var thisMonth = thisDate.getMonth() + 1;
@@ -62,6 +69,7 @@ Page({
 			var startDate = new Date();
 			var maxDay = thisDay + 7;
 			var isRecentDay = false;
+			var item;
 			for (var i = 0; i < list.length; i++) {
 				item = list[i];
 				startDate = new Date(item.start_date);
@@ -90,22 +98,18 @@ Page({
 				},
 				recentSubscribeList: recentList
 			});
-			if (recentList.length == 0) {
-				that.setData({
-					isRecentListEmpty: true
-				});
-			}
+			g_needRefreshCount = false;
 			wx.hideLoading();
 		}, (err) => {
 			// err
 			wx.hideLoading();
 		});
-		//this.drawProgress();
 	},
+	//加载所有订阅列表
 	loadSubscribeList: function (pageIndex) {
 		var that = this;
 		that.setData({
-			isLoading: true
+			isLoadingList: true
 		});
 		var SubscribeItemList = new wx.BaaS.TableObject(g_app.globalData.subscribeItemListTableID);
 		var uid = wx.BaaS.storage.get('uid');
@@ -117,8 +121,7 @@ Page({
 			if (list.length == 0)//没有数据返回
 			{
 				that.setData({
-					isEmpty: true,
-					isLoading: false
+					isLoadingList: false
 				});
 				return;
 			}
@@ -141,43 +144,41 @@ Page({
 			that.setData({
 				subscribeList: list,
 				totalCount: res.data.meta.total_count,
-				isLoading: false
+				isLoadingList: false
 			});
 		}, (err) => {
 			// err
 			that.setData({
-				isLoading: false
+				isLoadingList: false
 			});
 		});
 	},
-	//跳转到添加订阅页面
-	addSubscribeItem: function () {
-		wx.navigateTo({
-			url: '../addItem/addItem',
-		})
-	},
+	//swiper切换事件
 	changeMainSwiper: function (e) {
 		var currentIndex = e.detail.current;
-		var src = g_app.globalData.qiniuyunPath + 'image/icon/';
-		src = currentIndex == 1 ? src + 'arrow-down.png' : src + 'arrow-up.png';
 		this.setData({
-			srcImageArrow: src
+			imageArrowSrc: currentIndex == 1 ? 'arrow-down.png' : 'arrow-up.png'
 		});
-		//加载列表数据,不重复加载
+		//如果列表数据为空，加载列表数据
 		if (currentIndex == 1 && this.data.subscribeList.length == 0) {
 			g_pageIndex = 1;
 			this.loadSubscribeList(g_pageIndex);
 		}
+		else if (currentIndex == 0 && g_needRefreshCount) this.loadCountData();
 	},
+	//跳转到添加订阅页面
+	addSubscribeItem: function () {
+		wx.navigateTo({
+			url: '../editItem/editItem?action=add',
+		})
+	},
+	//scrollview滑动到底部事件
 	scrollToLower: function (e) {
 		//加载更多数据
-		if (this.data.subscribeList.length < this.data.totalCount) {
-			this.setData({
-				isLoading: true
-			});
+		if (!this.data.isLoadingList && this.data.subscribeList.length < this.data.totalCount)
 			this.loadSubscribeList(++g_pageIndex);
-		}
 	},
+	//触摸开始事件
 	touchStart: function (e) {
 		//判断是否只有一个触摸点
 		if (e.touches.length == 1) {
@@ -185,6 +186,7 @@ Page({
 			g_startX = e.touches[0].clientX;
 		}
 	},
+	//触摸移动事件
 	touchMove: function (e) {
 		if (e.touches.length == 1) {
 			var that = this;
@@ -193,7 +195,7 @@ Page({
 			//计算手指起始点的X坐标与当前触摸点的X坐标的差值
 			var disX = g_startX - moveX;
 			var itemStyle = "";
-			if (disX == 0 || disX < 0) {//如果移动距离小于等于0，文本层位置不变
+			if (disX == 0 || disX < 0 || disX < 10) {//如果移动距离小于等于0，或者移动距离少于10px，文本层位置不变
 				itemStyle = "left:0px";
 			} else if (disX > 0) {//移动距离大于0，文本层left值等于手指移动距离
 				itemStyle = "left:-" + disX + "px";
@@ -213,6 +215,7 @@ Page({
 			});
 		}
 	},
+	//触摸结束事件
 	touchEnd: function (e) {
 		var that = this;
 		if (e.changedTouches.length == 1) {
@@ -232,6 +235,7 @@ Page({
 			});
 		}
 	},
+	//删除订阅
 	deleteItem: function (e) {
 		var that = this;
 		var index = e.currentTarget.dataset.index;
@@ -242,28 +246,30 @@ Page({
 			content: '确定删除吗？',
 			success: function (res) {
 				if (res.confirm) {
-					//删除记录
-					item.isBusy = true;
+					//处理时禁用删除按钮
 					that.setData({
-						subscribeList: list
+						isBusy: true
 					});
+					//删除记录
 					var recordID = item.id;
 					var SubscribeItemList = new wx.BaaS.TableObject(g_app.globalData.subscribeItemListTableID);
 					SubscribeItemList.delete(recordID).then((res) => {
-						// 删除成功，提示并更新视图
-						list.splice(index, 1);
+						// 删除成功，提示并重新加载列表
 						that.setData({
-							subscribeList: list
+							isBusy: false,
+							subscribeList: []
 						});
+						g_needRefreshCount = true;//标记更新，切换回统计页面时需要更新
+						g_pageIndex = 1;
+						that.loadSubscribeList(g_pageIndex);
 						wx.showToast({
 							title: '删除成功',
 							icon: 'success',
 							duration: 3000
 						});
 					}, (err) => {
-						item.isBusy = false;
 						that.setData({
-							subscribeList: list
+							isBusy: false
 						});
 						wx.showToast({
 							title: '删除失败,请重试',
@@ -273,53 +279,14 @@ Page({
 					})
 
 				} else if (res.cancel) {
-					item.isBusy = false;
 					item.itemStyle = "left:0px";
 					that.setData({
+						isBusy: false,
 						subscribeList: list
 					});
 				}
 			}
 		})
-	},
-	drawProgress: function () {
-
-		var ctx = wx.createCanvasContext('canvasProgressBackground');
-		ctx.setLineWidth(6);
-		ctx.setStrokeStyle('#3ea6ff');
-		ctx.setLineCap('round');
-		ctx.beginPath();//开始一个新的路径 
-		ctx.arc(106, 106, 100, -Math.PI * 1 / 2, Math.PI * 1.5, false);
-		ctx.stroke();//对当前路径进行描边 
-		ctx.draw();
-		//todo:计算已缴纳费用，画进度
-		/*var thisMonthPaid = this.data.subscribeCountInfo.thisMonthPaid;
-		var thisMonthTotal = this.data.subscribeCountInfo.thisMonthTotal;
-	
-		var ctx = wx.createCanvasContext('canvasProgressBackground');
-		ctx.setLineWidth(6);
-		ctx.setStrokeStyle('#b2b2b2');
-		ctx.setLineCap('round')
-		ctx.beginPath();//开始一个新的路径 
-		ctx.arc(106, 106, 100, 0, 2 * Math.PI, false);//设置一个原点(106,106)，半径为100的圆的路径到当前路径 
-		ctx.stroke();//对当前路径进行描边 
-	
-		//3秒动画描绘进度
-		if (thisMonthTotal == 0) {
-			ctx.draw();
-			return;
-		}
-		var ratio = Math.PI * 1.5 * (thisMonthPaid / thisMonthTotal);
-	
-		ctx.setLineWidth(6);
-		ctx.setStrokeStyle('#3ea6ff');
-		ctx.setLineCap('round');
-		ctx.beginPath();//开始一个新的路径 
-		ctx.arc(106, 106, 100, -Math.PI * 1 / 2, ratio, false);
-		ctx.stroke();//对当前路径进行描边 
-		ctx.draw();
-		*/
-
 	}
 });
 

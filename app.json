@@ -1,13 +1,12 @@
 {
 	"pages": [
 		"pages/index/index",
-		"pages/addItem/addItem"
+		"pages/editItem/editItem"
 	],
 	"window": {
+		"navigationBarTextStyle": "black",
 		"backgroundTextStyle": "light",
 		"navigationBarBackgroundColor": "#fff",
-		"navigationBarTitleText": "WeChat",
-		"navigationBarTextStyle": "black",
 		"enablePullDownRefresh": false
 	}
 }

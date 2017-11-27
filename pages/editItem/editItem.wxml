@@ -9,7 +9,27 @@
                         <view class="weui-label">名称</view>
                     </view>
                     <view class="weui-cell__bd">
-                        <input class="weui-input" placeholder="请输入服务商名称,如:腾讯视频" name="subscribeName" confirm-type="next" auto-focus/>
+                        <input class="weui-input" placeholder="请输入服务商名称,如:腾讯视频" name="subscribeName" value='{{companyName}}' confirm-type="next" auto-focus/>
+                    </view>
+                </view>
+                <view class="weui-cell weui-cell_input">
+                    <view class="weui-cell__hd">
+                        <view class="weui-label">费用</view>
+                    </view>
+                    <view class="weui-cell__bd">
+                        <input class="weui-input" placeholder="请输入订阅费用" name="subscribeCharge" confirm-type="next" type="digit" value="{{charge}}" />
+                    </view>
+                    <view class="weui-cell__ft">
+                        <text>元</text>
+                    </view>
+                </view>
+
+                <view class="weui-cell weui-cell_input">
+                    <view class="weui-cell__hd">
+                        <view class="weui-label">说明</view>
+                    </view>
+                    <view class="weui-cell__bd">
+                        <input class="weui-input" placeholder="请输入说明,如:会员费" name="subscribeDescription" id="subscribeDescription" value='{{description}}' confirm-type="next" />
                     </view>
                 </view>
                 <view class="weui-cell weui-cell_input">
@@ -20,24 +40,12 @@
                         <radio-group bindchange="radioChange" name="subscribePeriod">
                             <label class="weui-cell weui-check__label" wx:for="{{radioItems}}" wx:key="value">
                                 <radio class="weui-check" value="{{item.value}}" checked="{{item.checked}}" />
-
                                 <view class="weui-cell__bd">{{item.name}}</view>
                                 <view class="weui-cell__ft weui-cell__ft_in-radio" wx:if="{{item.checked}}">
                                     <icon class="weui-icon-radio" type="success_no_circle" size="16"></icon>
                                 </view>
                             </label>
                         </radio-group>
-                    </view>
-                </view>
-                <view class="weui-cell weui-cell_input">
-                    <view class="weui-cell__hd">
-                        <view class="weui-label">费用</view>
-                    </view>
-                    <view class="weui-cell__bd">
-                        <input class="weui-input" placeholder="请输入订阅费用" name="subscribeCharge" confirm-type="next" type="digit" />
-                    </view>
-                    <view class="weui-cell__ft">
-                        <text>元</text>
                     </view>
                 </view>
 
@@ -52,17 +60,7 @@
                     </view>
                 </view>
 
-                <view class="weui-cell weui-cell_input">
-                    <view class="weui-cell__hd">
-                        <view class="weui-label">说明</view>
-                    </view>
-                    <view class="weui-cell__bd">
-                        <textarea class="weui-textarea" placeholder="请输入说明,如:会员费" style="height: 3.3em" name="subscribeDescription" id="subscribeDescription" />
-                        <view class="weui-textarea-counter">0/200</view>
-                    </view>
-                </view>
-
-                <button id="buttonAdd" formType='submit' class="weui-btn" type="primary" loading="{{isBusy}}" disabled="{{isBusy}}">添加</button>
+                <button id="buttonAdd" formType='submit' class="weui-btn" type="primary" loading="{{isBusy}}" disabled="{{isBusy}}">保存</button>
             </form>
         </view>
     </view>

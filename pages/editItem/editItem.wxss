@@ -23,7 +23,3 @@
 .weui-cells {
     padding-bottom: 5px;
 }
-
-#subscribeDescription {
-    margin-top: 10px;
-}
